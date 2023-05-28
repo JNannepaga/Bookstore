@@ -1,0 +1,51 @@
+{
+  "https_port": 443,
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:46818",
+      "sslPort": 44370
+    }
+  },
+  "profiles": {
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "Bookstore-Api": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:3700;http://localhost:3701"
+    },
+    "Bookstore-Api_Docker": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Bookstore_Docker"
+      },
+      "publishAllPorts": true,
+      "useSSL": true
+    },
+    "Bookstore-Api_DockerCompose": {
+      "commandName": "Executable",
+      "executablePath": "docker-compose",
+      "workingDirectory": "$(ProjectDir)",
+      "commandLineArgs": "-f docker-compose.yml up",
+      "launchBrowser": true,
+      "launchUrl": "swagger/index.html",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Bookstore_DockerCompose"
+      },
+      "publishAllPorts": true,
+      "useSSL": true
+    }
+  }
+}

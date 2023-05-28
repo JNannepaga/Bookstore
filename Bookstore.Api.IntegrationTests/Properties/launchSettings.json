@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Bookstore.Api.IntegrationTests": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
