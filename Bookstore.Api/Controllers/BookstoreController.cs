@@ -48,7 +48,7 @@ namespace Bookstore.Controllers
                 _.Schema = _schema;
                 _.Query = query.Query;
                 _.OperationName = query.OperationName;
-                _.Variables = query.Variables?.ToInputs();
+                _.Variables = query.Variables.ToInputs();
             });
 
             if (result.Errors?.Count > 0)

@@ -7,7 +7,9 @@ namespace Bookstore.Controllers
     using System;
     using Bookstore.Services.Core;
     using Bookstore.Services.Models;
+    using DnsClient.Internal;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Logging;
 
     /// <summary>
     /// Class for BooksController.
@@ -17,6 +19,7 @@ namespace Bookstore.Controllers
     [Route("api/[controller]")]
     public class BooksController : ControllerBase
     {
+        private readonly ILogger<BooksController> _logger;
         private readonly IBooksService _booksService;
 
         /// <summary>
@@ -24,8 +27,9 @@ namespace Bookstore.Controllers
         /// <see cref="BooksController"/>.
         /// </summary>
         /// <param name="booksService">booksService.</param>
-        public BooksController(IBooksService booksService)
+        public BooksController(ILogger<BooksController> logger, IBooksService booksService)
         {
+            _logger = logger;
             _booksService = booksService;
         }
 
@@ -40,10 +44,14 @@ namespace Bookstore.Controllers
         {
             try
             {
-                return Ok(_booksService.AddBook(book));
+                _logger.LogInformation("Trying to add the book");
+                _booksService.AddBook(book);
+                _logger.LogInformation("Book added successfully");
+                return Ok();
             }
             catch (Exception ex)
             {
+                _logger.LogError("Failed to add the book {0}", ex.Message);
                 return BadRequest(ex.Message);
             }
         }
@@ -56,7 +64,10 @@ namespace Bookstore.Controllers
         [Route("[action]")]
         public IActionResult GetBooks()
         {
-            return Ok(_booksService.GetBooks());
+            _logger.LogInformation("Trying to get the books");
+            var books = _booksService.GetBooks();
+            _logger.LogInformation("Fetched the books successfully");
+            return Ok(books);
         }
     }
 }
