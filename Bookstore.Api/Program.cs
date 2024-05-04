@@ -25,31 +25,31 @@ namespace Bookstore
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureLogging(logging =>
-                {
-                    logging.SetMinimumLevel(LogLevel.Information)
-                           .AddOpenTelemetry(options =>
-                           {
-                               options.IncludeFormattedMessage = true;
-                               options.IncludeScopes = true;
-                               options.ParseStateValues = true;
-                               options.AddOtlpExporter(opt =>
-                               {
-                                   opt.Protocol = OtlpExportProtocol.Grpc;
-                                   opt.Endpoint = new Uri("http://localhost:4317");
-                               })
-                                    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName: "OTEL-Sample-POC"));
-                           });
-                                
-                })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
-                })
-                .ConfigureAppConfiguration(appConfig =>
-                {
-                    appConfig.AddJsonFile($"appsettings.json", false, true);
-                    appConfig.AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", false, true);
+                    webBuilder.ConfigureLogging(logging =>
+                    {
+                        logging.SetMinimumLevel(LogLevel.Information)
+                               .AddOpenTelemetry(options =>
+                               {
+                                   options.IncludeFormattedMessage = true;
+                                   options.IncludeScopes = true;
+                                   options.ParseStateValues = true;
+                                   options.AddOtlpExporter(opt =>
+                                   {
+                                       opt.Protocol = OtlpExportProtocol.Grpc;
+                                       opt.Endpoint = new Uri("http://otel-collector:4317"); // DNS name resolution.
+                                       opt.ExportProcessorType = OpenTelemetry.ExportProcessorType.Batch;
+                                   })
+                                        .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName: "OTEL-Sample-POC"));
+                               });
+
+                    })
+                    .ConfigureAppConfiguration(appConfig =>
+                    {
+                        appConfig.AddJsonFile($"appsettings.json", false, true);
+                        appConfig.AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", false, true);
+                    }).UseStartup<Startup>();
                 });
     }
 }

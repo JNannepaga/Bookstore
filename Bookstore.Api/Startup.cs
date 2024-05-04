@@ -55,17 +55,17 @@ namespace Bookstore
             DependencyContainer.InitializeRepositories(services, this._configuration);
 
             // Add OpenTelemetry SDK
-            services.AddOpenTelemetry()
-                .ConfigureResource(resource => resource.AddService(serviceName: "OTEL-Sample-POC"))
-                .WithTracing(options =>
-                {
-                    options.AddAspNetCoreInstrumentation()
-                        .AddHttpClientInstrumentation()
-                        .AddOtlpExporter(otlpOptions =>
-                        {
-                            otlpOptions.Endpoint = new Uri("http://jaeger:4318");
-                        });
-                });
+            //services.AddOpenTelemetry()
+            //    .ConfigureResource(resource => resource.AddService(serviceName: "OTEL-Sample-POC"))
+            //    .WithTracing(options =>
+            //    {
+            //        options.AddAspNetCoreInstrumentation()
+            //            .AddHttpClientInstrumentation()
+            //            .AddOtlpExporter(otlpOptions =>
+            //            {
+            //                otlpOptions.Endpoint = new Uri("http://jaeger:4318");
+            //            });
+            //    });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

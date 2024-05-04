@@ -1,0 +1,43 @@
+﻿receivers:
+  otlp:
+    protocols:
+      grpc: 
+        endpoint: otel-collector:4317
+
+exporters:
+  logging:
+    loglevel: debug      
+  loki:
+    endpoint: 'http://loki:3100/loki/api/v1/push'
+    default_labels_enabled:
+      exporter: false
+      job: true
+    headers:
+      X-Scope-OrgID: Joe
+    tls:
+      insecure: true
+  
+processors:
+  batch: null
+  resource:
+    attributes:
+      - key: env
+        value: "🐳"
+        action: insert
+  filter/healthz:
+    error_mode: ignore
+    traces:
+      span:
+        - name == "/healthz/live"
+        - name == "/healthz/ready"
+
+service:
+  pipelines:
+    logs:
+      receivers:
+        - otlp
+      processors:
+        - batch
+      exporters:
+        - loki
+        - logging

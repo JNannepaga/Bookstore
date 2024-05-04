@@ -2,56 +2,78 @@ version: "3.9"
 services:
   bookstore-db:
     image: "mongo:latest"
-    container_name: "bookstore-db-container"
+    container_name: "bookstore-db"
     ports:
        - "27017:27017" #Expose this if you want to connect mongo-client(compass) from external sources(Web).
     networks:
-      - my-network
+      - bookstore-net
 
   bookstore-api:
-    image: "bookstore-api"
     build:
       context: ../
       dockerfile: Bookstore.Api/Dockerfile
-    container_name: "bookstore-api-container"
+    container_name: "bookstore-api"
     ports:
       - "5000:80"
       - "5001:443"
     environment:
       - ASPNETCORE_ENVIRONMENT=Bookstore_DockerCompose
     networks:
-      - my-network
+      - bookstore-net
     depends_on:
-      - jaeger
       - otel-collector 
- 
-  jaeger:
-    image: jaegertracing/opentelemetry-all-in-one
-    container_name: jaeger
-    ports:
-      - "13133:13133"
-      - "16686:16686"
-      - "4318:4317"
-      - "14250" 
-    restart: unless-stopped
-    networks:
-      - my-network
  
  # Add the OpenTelemetry Collector service
   otel-collector:
-    image: otel/opentelemetry-collector:0.99.0
-    container_name: otel-collector
-    ports:
-      - "127.0.0.1:4317:4317"
-      - "127.0.0.1:55679:55679"
-    networks:
-      - my-network
+    image: otel/opentelemetry-collector-contrib:0.86.0
+    container_name: bookstore-otel-collector
+    restart: unless-stopped
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
-      - "C:/Users/Joseph_A/source/repos/DockerInfra/config.yaml:/etc/otel-collector-config.yaml"
-    restart: unless-stopped
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP http receiver
+    networks:
+      - bookstore-net
+
+ # Add the LOKI logs aggregator service
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: bookstore-loki
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki-config.yaml:/etc/loki-config.yaml
+    networks:
+      - bookstore-net
+      
+ # Add the Grafana service for visualization
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: bookstore-grafana
+    ports:
+      - "3099:3000"
+    volumes:
+      - ./grafana-config.yaml:/etc/grafana-config.yaml
+
+    environment:
+      # - GF_SECURITY_ADMIN_PASSWORD=admin
+      # - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/frontend.json
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5000/api/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bookstore-net
 
 networks:
-  my-network:
+  bookstore-net:
     driver: bridge
     
